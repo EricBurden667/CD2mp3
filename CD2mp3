@@ -1,3 +1,6 @@
+## Edit these variables:
+year=2006
+genre="Rock"
 
 cdda2wav -alltracks \
 	-cddb 0 -cddbp-server=gnudb.gnudb.org \
@@ -6,8 +9,6 @@ cdda2wav -alltracks \
 
 test -f audio_01.inf || { echo "ERROR: INF file not found."; exit 1;}
 
-year=2006
-genre="Rock"
 artist="$(grep '^\(Performer\|Artist\)=' audio_01.inf | cut -d= -f2)"
 album="$(grep -a 'Albumtitle=' audio_01.inf | cut -d= -f2 | iconv -f ISO_8859-1 -t UTF-8)"
 artist=$(echo ${artist} | sed -e "s/^'//;s/'$//")
