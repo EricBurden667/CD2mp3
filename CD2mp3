@@ -1,0 +1,37 @@
+
+cdda2wav -alltracks \
+	-cddb 0 -cddbp-server=gnudb.gnudb.org \
+	-no-hidden-track \
+	-S 8 -max
+
+test -f audio_01.inf || { echo "ERROR: INF file not found."; exit 1;}
+
+year=2006
+genre="Rock"
+artist="$(grep '^\(Performer\|Artist\)=' audio_01.inf | cut -d= -f2)"
+album="$(grep -a 'Albumtitle=' audio_01.inf | cut -d= -f2 | iconv -f ISO_8859-1 -t UTF-8)"
+artist=$(echo ${artist} | sed -e "s/^'//;s/'$//")
+album=$(echo ${album} | sed -e "s/^'//;s/'$//")
+
+# Checks
+test -z "${artist}" && { echo "ERROR: No artist info found."; exit 1; }
+test -z "${album}" && { echo "ERROR: No album info found."; exit 1; }
+
+for i in audio*.wav
+  do
+    inf="$(echo $i | sed -e 's/wav$/inf/')"
+    title="$(grep -a 'Tracktitle' $inf | cut -d\' -f2 | iconv -f ISO_8859-1 -t UTF-8 | sed -e 's#/#-#g')"
+    track="$(grep 'Track=' $inf | cut -d= -f2 | sed -e 's/[\ \t]\+//g')"
+    echo "Encoding: $track - $title"
+    oggenc $i -b 192 -G "${genre}" \
+        -a "${artist}" -l "${album}" \
+        -N $(printf "%02i" $track) -t "$title" -d ${year} \
+        -n "%n - %t.ogg"
+done
+
+read -n 1 -p "Everything ok? (y/n)" -t 30 status
+case $status in
+    y|j|Y|J) echo -e "\nOk, deleting the sources.";
+	rm -vf audio_*.wav audio_*.inf audio.cd*;;
+esac
+
