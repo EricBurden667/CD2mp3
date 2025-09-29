@@ -24,10 +24,8 @@ for i in audio*.wav
     title="$(grep -a 'Tracktitle' $inf | cut -d\' -f2 | iconv -f ISO_8859-1 -t UTF-8 | sed -e 's#/#-#g')"
     track="$(grep 'Track=' $inf | cut -d= -f2 | sed -e 's/[\ \t]\+//g')"
     echo "Encoding: $track - $title"
-    oggenc $i -b 192 -G "${genre}" \
-        -a "${artist}" -l "${album}" \
-        -N $(printf "%02i" $track) -t "$title" -d ${year} \
-        -n "%n - %t.ogg"
+    lame -h -b 192 --tt "${title}" --ta "${artist}" --tl "${album}" \
+        --ty ${year} --tn $track --tg "${genre}" $i "$(printf "%02i" $track) - ${title}.mp3"
 done
 
 read -n 1 -p "Everything ok? (y/n)" -t 30 status
